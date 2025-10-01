@@ -1,10 +1,10 @@
 "use client";
 
-import { useWeb3Modal } from '@web3modal/wagmi/react'
+import { useAppKit } from '@reown/appkit/react'
 import { useAccount, useDisconnect } from 'wagmi'
 
 export function AppKitButton() {
-  const { open } = useWeb3Modal()
+  const { open } = useAppKit()
   const { isConnected, address } = useAccount()
   const { disconnect } = useDisconnect()
 

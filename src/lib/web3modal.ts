@@ -1,32 +1,49 @@
-import { createWeb3Modal } from '@web3modal/wagmi/react'
-import { defaultWagmiConfig } from '@web3modal/wagmi/react/config'
-import { mainnet, arbitrum, base, sepolia, baseSepolia } from 'wagmi/chains'
+import { createAppKit } from '@reown/appkit/react'
+import { WagmiAdapter } from '@reown/appkit-adapter-wagmi'
+import { mainnet, arbitrum, base, sepolia, baseSepolia, type AppKitNetwork } from '@reown/appkit/networks'
+import { QueryClient } from '@tanstack/react-query'
 import { env } from './env'
 
-// Define networks based on environment  
-const chains = env.enableTestnets
-  ? [mainnet, base, arbitrum, sepolia, baseSepolia] as const
-  : [mainnet, base, arbitrum] as const
+// Setup queryClient
+export const queryClient = new QueryClient()
 
-// Create wagmi config
-const wagmiConfig = defaultWagmiConfig({
-  chains,
+// Get projectId from environment
+if (!env.projectId && typeof window !== 'undefined') {
+  throw new Error('Project ID is not set')
+}
+
+// Define networks based on environment - AppKit requires at least one network
+const networks: AppKitNetwork[] = env.enableTestnets 
+  ? [mainnet, arbitrum, base, sepolia, baseSepolia]
+  : [mainnet, arbitrum, base]
+
+// Create Wagmi Adapter
+const wagmiAdapter = new WagmiAdapter({
+  networks,
+  projectId: env.projectId,
+  ssr: true
+})
+
+// Create AppKit instance
+export const appkit = createAppKit({
+  adapters: [wagmiAdapter],
+  networks: networks as [AppKitNetwork, ...AppKitNetwork[]],
   projectId: env.projectId,
   metadata: {
     name: env.appName,
     description: env.appDescription,
     url: env.appUrl,
     icons: [`${env.appUrl}/favicon.ico`]
+  },
+  features: {
+    analytics: true, // Optional - for usage analytics
+    email: true, // Enable email login
+    socials: ['google', 'apple', 'discord', 'github'], // Social login options
+    emailShowWallets: true, // Show wallet options alongside email
+    onramp: true, // Enable fiat onramp
+    swaps: true, // Enable token swaps
   }
 })
 
-// Create modal with Phase 1 features
-createWeb3Modal({
-  wagmiConfig,
-  projectId: env.projectId,
-  enableAnalytics: true, // Usage analytics
-  enableOnramp: true, // Fiat onramp (Phase 2 preview)
-  enableSwaps: true, // Token swaps (Phase 2 preview)
-})
-
-export { wagmiConfig }
+// Export wagmi config from adapter
+export const wagmiConfig = wagmiAdapter.wagmiConfig

@@ -1,12 +1,12 @@
 "use client";
 
-import { useWeb3Modal } from '@web3modal/wagmi/react'
+import { useAppKit } from '@reown/appkit/react'
 import { useAccount, useDisconnect } from 'wagmi'
 import { useAuth } from '@/contexts/AuthContext'
 import { AuthStatus } from './AuthStatus'
 
 export function Phase1Demo() {
-  const { open } = useWeb3Modal()
+  const { open } = useAppKit()
   const { isConnected, address } = useAccount()
   const { disconnect } = useDisconnect()
   const { isAuthenticated } = useAuth()
